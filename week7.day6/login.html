@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="./bootstrap-3.3.7-dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/login.css">
+    <link rel="stylesheet" href="css/reset.css">
+</head>
+<body>
+   <section>
+     <p>欢迎来到京东会员注册</p>
+     <div>
+       <form>
+         <div>
+           <label>用户名</label>
+           <div>
+             <input type="text" placeholder="用户名" autofocus name="name"><span class="spanspan" name="namespan"></span>
+           </div>
+         </div>
+         <div>
+          <label>密码</label>
+          <div>
+            <input type="password" placeholder="密码最低8位 最多16位" minlength="8" maxlength="16" name="pwd"><span class="spanspan"></span>
+          </div>
+        </div>
+        <div>
+          <label>确认密码</label>
+          <div>
+            <input type="password" placeholder="确认密码" name="pwdr"><span class="spanspan"></span>
+          </div>
+        </div>
+        <div>
+          <label>验证码</label>
+          <div>
+            <input type="text" placeholder="验证码" name="vcinput"><a id="sc"></a><br><span name="vcspan"></span>
+          </div>
+        </div>
+        <button>注册</button>
+       </form>
+     </div>
+   </section>
+   <script src="js/tools.js"></script>
+   <script src="js/jquery.min.js"></script>
+   <script>
+    let oIptName = document.querySelector('[name="name"]');
+    let oIptPwd1 = document.querySelector('[name="pwd"]');
+    let oIptPwd2 = document.querySelector('[name="pwdr"]')
+    let oIptVcspan = document.querySelector('[name="vcspan"]');
+    let oIptVc = document.querySelector('[name="vcinput"]');
+    let oIptnameSpan = document.querySelector('[name="namespan"]');
+    let bool;
+    let oVcA = document.querySelector('a');
+    oVcA.innerHTML = mySetVc();
+    oVcA.addEventListener('click',()=>{
+      oVcA.innerHTML = mySetVc();
+    })
+    oIptName.addEventListener('change',()=>{
+      let name = oIptName.value;
+      $.ajax({
+        url:'../server/goods_select.php',
+        type:'post',
+        data:{userName:name},
+        dataType:'json',
+        success:result=>{
+          if(result.res === 1){
+            oIptnameSpan.innerHTML ='账号可以使用';
+            bool = true;
+          }else{
+            oIptnameSpan.innerHTML = '账号不可以使用';
+            bool = false;
+          }
+        }
+      })
+    })
+    const oForm = document.querySelector('form');
+    const oBut = document.querySelector('button');
+    oForm.addEventListener('submit',e=>{
+      e.preventDefault();
+      oBut.addEventListener('click',()=>{
+        if(bool === false){
+          return;
+        }
+        let namval = oIptName.value;
+        let pwdval1 = oIptPwd1.value;
+        let pwdval2 = oIptPwd2.value;
+        let vcval = oIptVc.value;
+        if(vcval.toUpperCase() !== oVcA.innerHTML.toUpperCase()){
+          oIptVcspan.innerHTML = '验证码错误';
+          return;
+        }else{
+          oIptVcspan.innerHTML ='';
+        }
+        $.ajax({
+          url:'../server/goods_res.php',
+          type:'post',
+          data:{userName:namval,userPwd:pwdval1},
+          dataType:'json',
+          success:result=>{
+            if(result.res === 1){
+              window.alter('注册成功，点击确定跳转首页面');
+              windoe.location.href = 'gage.html';
+            }else{
+              window.alert('注册失败,用户名重复,请您重新设定用户名,玩命继续注册');
+            }
+          }
+        })
+
+      })
+    })
+
+   </script>
+</body>
+</html>

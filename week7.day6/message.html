@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="./css/iconfont.css">
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/maessage.css">
+</head>
+<body>
+    <h1>我是商品详情页面</h1>
+    <section>
+        <div>
+            <h1>商品详细信息</h1>
+        </div>
+        <figure>
+            <img src="images/01.jpg">
+        </figure>
+        <figcaption>
+            <h1>商品描述但愿无事常相见，生是为死亡而做的一种准备，一种训练</h1>
+            <div>
+                <span class="iconfont icon-dollar"></span><p>96</p>
+            </div>
+            <div>
+                <button>XL</button>
+                <button>L</button>
+                <button>M</button>
+                <button>S</button>
+                <button>XS</button>
+            </div>
+            <p>
+                <a href="javcscript:;">立即购买</a>
+                <a href="javascript;;">加入购物车</a>
+            </p>
+        </figcaption>
+    </section>
+    <main>
+        <ul>
+            <li>商品详细信息</li>
+            <li>商品参数信息</li>
+            <li>相关商品</li>
+        </ul>
+        <div>
+        <img src="images/4.jpeg">
+        </div>
+    </main>
+    <script src="js/tools.js"></script>
+    <script src="js/jquery.min.js"></script>
+    <script>
+        // 实际项目中要执行从那里来到哪里去的效果
+        // 也就是从那里页面来的仔回那里去
+        // 实现方式就是跳转至登录页面时，携带当前页面地址信息
+        // 1，通过函数获取地址栏参数
+        const valObj = getUrlVal();
+        // 定义变量存储响应体数据
+        let res = {};
+        // 2，发送ajax请求渲染生成页面
+        $.ajax({
+            url:'../server/goods_detail.php',
+            data:{goods_id:valObj.goods_id},
+            type:'post',
+            dataType:'json',
+            success:function(result){
+                // 给全局变量res赋值，存储result结果，也就是当前商品信息
+                res = result;
+                let str = `<div class="panel-body">
+          <div class="media">
+            <div class="media-left">
+              <a href="#">
+                <img class="media-object" src="${result.goods_small_logo}" alt="...">
+              </a>
+            </div>
+            <div class="media-body">
+              <h4 class="media-heading">${result.goods_name}</h4>
+              <p>
+                <i class="glyphicon glyphicon-yen"></i>
+                <span>${result.goods_price}</span>
+              </p>
+              <div class="btn-group" role="group" aria-label="...">
+                <button type="button" class="btn btn-default">XL</button>
+                <button type="button" class="btn btn-default">L</button>
+                <button type="button" class="btn btn-default">M</button>
+                <button type="button" class="btn btn-default">S</button>
+                <button type="button" class="btn btn-default">XS</button>
+              </div>
+              <p>
+                <a href="javascript:;" class="btn btn-warning btn-lg" role="button">立即购买</a>
+                <a href="javascript:;" class="btn btn-danger btn-lg" name="join" role="button">加入购物车</a>
+              </p>
+            </div>
+          </div>
+          <ul class="nav nav-tabs">
+            <li role="presentation" class="active"><a href="#">商品详细信息</a></li>
+            <li role="presentation"><a href="#">商品参数信息</a></li>
+            <li role="presentation"><a href="#">相关商品</a></li>
+          </ul>
+          <div>
+              ${result.goods_introduce}
+          </div>
+        </div>
+        `;
+        $('.panel').append(str);
+            }
+        })
+        // 页面内容是动态生成的，要通过事件委托，执行点击事件
+        // 不能直接获取标签对象，加载事件
+        // 因为ajax请求是异步执行的
+        const oFather = document.querySelector('.panel');
+        oFather.addEventListener('click',e=>{
+            if(e.target.getAttribute('name') === 'join'){
+                // 1,先判断，是否已经登录，看有没有cookie中的login
+                const cookieObj = myGetCookie();
+                // 2.创建一个数组，存储购物车数据内容
+                let arr = [];
+                if(cookieObj.login === undefined){
+                    // 没有登录，就先登录
+                    let bool = window.confirm('您还没有登录点击确定，跳转至登录界面，点击取消，取消登录');
+                    if(bool){
+                        // 跳转登录页面，携带当前页面信息
+                        // 跳转的地址是 登录页面地址携带当前页面地址信息参数
+                        window.location.href = `./login.html?url=${window.location.href}`;
+                    }
+                }else{
+                    // 已经登录，要把商品信息添加到购物车中
+                    // 如果没有这个商品信息，执行新增商品信息
+                    // 如果已经有来这个商品，购买数量加1
+                    // 实现购物车效果应该是在数据库中做相关操作
+                    // 现在没有数据库，而且购物车的数据库执行非常复杂
+                    // 使用localStorage来模拟购物车数据
+
+                    // 1，购物车悉尼下不存在 调用结果是null，直接写入商品信息
+                    if(localStorage.getItem('cart')===null){
+                        // 当前商品的所有悉尼下都存储在result形参中 是对象形式
+                        // 需要添加一些属性 购买数量1，默认购买
+                        // 在全局变量res，操作当前商品信息
+                        res.num = 1;
+                        // 购买数量是1
+                        res.buy = true;
+                        // 默认购买
+                        // 将新增数据之后的result对象，xieru到数组中
+                        arr.push(res);
+                    }else{
+                        // 如果有购物车数据
+                        // 如果没有当前商品，新增商品信息
+                    // 如果有当前商品，当前商品数量+1
+                    // 定义一个变量
+                    let bool = true;
+                    arr = JSON.parse(localStorage.getItem('cart'));
+                    arr.forEach((v,k)=>{
+                        // 找到是否有与当前商品相同的good——id
+                        // 有相同的goods——id，证明商品信息已经存在数值加1 
+                        // 没有相同的goods——id，证明商品信息不存在，直接设定写入新的商品信息
+                        if(v.goods_id === res.goods_id){
+                            // 有商品购买数量加1
+                            v.num++;
+                            bool = false;
+                        }
+                        // 循环结束如果bool还是true，证明购物车中没有当前商品
+                        // 执行新增商品操作
+                        if(bool){
+                            res.num = 1;
+                            res.buy = true;
+                            arr.push(res);
+                        }
+                    })
+                    }
+                    // 将arrcunchu到localStorage中
+                    localStorage.setItem('cart',JSON.stringify(arr));
+                }
+            }
+        })
+    </script>
+</body>
+</html>
